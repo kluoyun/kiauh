@@ -123,7 +123,7 @@ function install_telegram_bot_dependencies() {
 
   ### Update system package info
   status_msg "Updating package lists..."
-  if ! sudo apt-get update --allow-releaseinfo-change; then
+  if ! echo "${PASSWORD}" | sudo -S apt-get update --allow-releaseinfo-change; then
     log_error "failure while updating package lists"
     error_msg "Updating package lists failed!"
     exit 1
@@ -131,7 +131,7 @@ function install_telegram_bot_dependencies() {
 
   ### Install required packages
   status_msg "Installing required packages..."
-  if ! sudo apt-get install --yes "${packages[@]}"; then
+  if ! echo "${PASSWORD}" | sudo -S apt-get install --yes "${packages[@]}"; then
     log_error "failure while installing required moonraker-telegram-bot packages"
     error_msg "Installing required packages failed!"
     exit 1
@@ -322,13 +322,13 @@ function write_telegram_bot_service() {
   ### replace all placeholders
   if [[ ! -f ${service} ]]; then
     status_msg "Creating service file for instance ${i} ..."
-    sudo cp "${service_template}" "${service}"
+    echo "${PASSWORD}" | sudo -S cp "${service_template}" "${service}"
     if [[ -z ${i} ]]; then
-      sudo sed -i "s| %INST%||" "${service}"
+      echo "${PASSWORD}" | sudo -S sed -i "s| %INST%||" "${service}"
     else
-      sudo sed -i "s|%INST%|${i}|" "${service}"
+      echo "${PASSWORD}" | sudo -S sed -i "s|%INST%|${i}|" "${service}"
     fi
-    sudo sed -i "s|%USER%|${USER}|g; s|%ENV%|${TELEGRAM_BOT_ENV}|; s|%ENV_FILE%|${env_file}|" "${service}"
+    echo "${PASSWORD}" | sudo -S sed -i "s|%USER%|${USER}|g; s|%ENV%|${TELEGRAM_BOT_ENV}|; s|%ENV_FILE%|${env_file}|" "${service}"
 
     status_msg "Creating environment file for instance ${i} ..."
     cp "${env_template}" "${env_file}"
@@ -347,15 +347,15 @@ function remove_telegram_bot_systemd() {
   status_msg "Removing Telegram Bot Systemd Services ..."
   for service in $(telegram_bot_systemd | cut -d"/" -f5); do
     status_msg "Removing ${service} ..."
-    sudo systemctl stop "${service}"
-    sudo systemctl disable "${service}"
-    sudo rm -f "${SYSTEMD}/${service}"
+    echo "${PASSWORD}" | sudo -S systemctl stop "${service}"
+    echo "${PASSWORD}" | sudo -S systemctl disable "${service}"
+    echo "${PASSWORD}" | sudo -S rm -f "${SYSTEMD}/${service}"
     ok_msg "Done!"
   done
 
   ### reloading units
-  sudo systemctl daemon-reload
-  sudo systemctl reset-failed
+  echo "${PASSWORD}" | sudo -S systemctl daemon-reload
+  echo "${PASSWORD}" | sudo -S systemctl reset-failed
   ok_msg "Telegram Bot Services removed!"
 }
 

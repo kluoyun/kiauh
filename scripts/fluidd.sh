@@ -93,7 +93,8 @@ function install_fluidd_macros() {
     echo -e "| Otherwise you should consider to answer with 'yes' to |"
     echo -e "| download the recommended macros.                      |"
     bottom_border
-    read -p "${cyan}###### Download the recommended macros? (Y/n):${white} " yn
+    # read -p "${cyan}###### Download the recommended macros? (Y/n):${white} " yn
+    yn="Y"
     case "${yn}" in
       Y|y|Yes|yes|"")
         select_msg "Yes"
@@ -208,11 +209,11 @@ function remove_fluidd_dir() {
 function remove_fluidd_nginx_config() {
   if [[ -e "/etc/nginx/sites-available/fluidd" ]]; then
     status_msg "Removing Fluidd configuration for Nginx ..."
-    sudo rm "/etc/nginx/sites-available/fluidd" && ok_msg "File removed!"
+    echo "${PASSWORD}" | sudo -S rm "/etc/nginx/sites-available/fluidd" && ok_msg "File removed!"
   fi
   if [[ -L "/etc/nginx/sites-enabled/fluidd" ]]; then
     status_msg "Removing Fluidd Symlink for Nginx ..."
-    sudo rm "/etc/nginx/sites-enabled/fluidd" && ok_msg "File removed!"
+    echo "${PASSWORD}" | sudo -S rm "/etc/nginx/sites-enabled/fluidd" && ok_msg "File removed!"
   fi
 }
 
@@ -223,7 +224,7 @@ function remove_fluidd_logs() {
   if [[ -n ${files} ]]; then
     for file in ${files}; do
       status_msg "Removing ${file} ..."
-      sudo rm -f "${file}"
+      echo "${PASSWORD}" | sudo -S rm -f "${file}"
       ok_msg "${file} removed!"
     done
   fi
@@ -422,7 +423,8 @@ function select_fluidd_port() {
 
     local new_port re="^[0-9]+$"
     while true; do
-      read -p "${cyan}Please enter a new Port:${white} " new_port
+      # read -p "${cyan}Please enter a new Port:${white} " new_port
+      new_port=81
       if [[ ${new_port} =~ ${re} && ${new_port} != "${MAINSAIL_PORT}" ]]; then
         select_msg "Setting port ${new_port} for Fluidd!"
         SET_LISTEN_PORT=${new_port}

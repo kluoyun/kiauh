@@ -56,9 +56,16 @@ function klipperscreen_setup() {
     exit 1
   fi
 
+  ok_msg "修改dbus-python版本"
+  cp "${KLIPPERSCREEN_DIR}"/scripts/KlipperScreen-requirements.txt "${KLIPPERSCREEN_DIR}"/scripts/KlipperScreen-requirements.txt.bak
+  sed -i 's/dbus-python.*/dbus-python==1.2.18/g' "${KLIPPERSCREEN_DIR}"/scripts/KlipperScreen-requirements.txt
+
   status_msg "Installing KlipperScreen ..."
   if "${KLIPPERSCREEN_DIR}"/scripts/KlipperScreen-install.sh; then
     ok_msg "KlipperScreen successfully installed!"
+    ok_msg "恢复KlipperScreen git仓库"
+    rm "${KLIPPERSCREEN_DIR}"/scripts/KlipperScreen-requirements.txt
+    mv -f "${KLIPPERSCREEN_DIR}"/scripts/KlipperScreen-requirements.txt.bak "${KLIPPERSCREEN_DIR}"/scripts/KlipperScreen-requirements.txt
   else
     print_error "KlipperScreen installation failed!"
     exit 1
@@ -87,11 +94,11 @@ function remove_klipperscreen() {
     status_msg "Removing KlipperScreen service ..."
     do_action_service "stop" "KlipperScreen"
     do_action_service "disable" "KlipperScreen"
-    sudo rm -f "${SYSTEMD}/KlipperScreen.service"
+    echo "${PASSWORD}" | sudo -S rm -f "${SYSTEMD}/KlipperScreen.service"
 
     ###reloading units
-    sudo systemctl daemon-reload
-    sudo systemctl reset-failed
+    echo "${PASSWORD}" | sudo -S systemctl daemon-reload
+    echo "${PASSWORD}" | sudo -S systemctl reset-failed
     ok_msg "KlipperScreen Service removed!"
   fi
 

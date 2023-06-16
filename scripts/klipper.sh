@@ -71,7 +71,8 @@ function start_klipper_setup() {
   ### user selection for python version
   print_dialog_user_select_python_version
   while true; do
-    read -p "${cyan}###### Select Python version:${white} " input
+    # read -p "${cyan}###### Select Python version:${white} " input
+    input=1
     case "${input}" in
       1)
         select_msg "Python 3.x\n"
@@ -92,8 +93,8 @@ function start_klipper_setup() {
   print_dialog_user_select_instance_count
   regex="^[1-9][0-9]*$"
   while [[ ! ${input} =~ ${regex} ]]; do
-    read -p "${cyan}###### Number of Klipper instances to set up:${white} " -i "1" -e input
-
+    # read -p "${cyan}###### Number of Klipper instances to set up:${white} " -i "1" -e input
+    input=1
     if [[ ${input} =~ ${regex} ]]; then
       instance_count="${input}"
       select_msg "Instance count: ${instance_count}\n"
@@ -110,7 +111,8 @@ function start_klipper_setup() {
   if (( instance_count > 1 )); then
     print_dialog_user_select_custom_name_bool
     while true; do
-      read -p "${cyan}###### Assign custom names? (y/N):${white} " input
+      # read -p "${cyan}###### Assign custom names? (y/N):${white} " input
+      input="Y"
       case "${input}" in
         Y|y|Yes|yes)
           select_msg "Yes\n"
@@ -323,7 +325,7 @@ function install_klipper_packages() {
 
   ### Update system package info
   status_msg "Updating package lists..."
-  if ! sudo apt-get update --allow-releaseinfo-change; then
+  if ! echo "${PASSWORD}" | sudo -S apt-get update --allow-releaseinfo-change; then
     log_error "failure while updating package lists"
     error_msg "Updating package lists failed!"
     exit 1
@@ -331,7 +333,7 @@ function install_klipper_packages() {
 
   ### Install required packages
   status_msg "Installing required packages..."
-  if ! sudo apt-get install --yes "${packages[@]}"; then
+  if ! echo "${PASSWORD}" | sudo -S apt-get install --yes "${packages[@]}"; then
     log_error "failure while installing required klipper packages"
     error_msg "Installing required packages failed!"
     exit 1
@@ -376,10 +378,10 @@ function create_klipper_service() {
   if [[ ! -f ${service} ]]; then
     status_msg "Create Klipper service file ..."
 
-    sudo cp "${service_template}" "${service}"
-    sudo cp "${env_template}" "${env_file}"
-    sudo sed -i "s|%USER%|${USER}|g; s|%ENV%|${KLIPPY_ENV}|; s|%ENV_FILE%|${env_file}|" "${service}"
-    sudo sed -i "s|%USER%|${USER}|; s|%LOG%|${log}|; s|%CFG%|${cfg}|; s|%PRINTER%|${klippy_serial}|; s|%UDS%|${klippy_socket}|" "${env_file}"
+    echo "${PASSWORD}" | sudo -S cp "${service_template}" "${service}"
+    echo "${PASSWORD}" | sudo -S cp "${env_template}" "${env_file}"
+    echo "${PASSWORD}" | sudo -S sed -i "s|%USER%|${USER}|g; s|%ENV%|${KLIPPY_ENV}|; s|%ENV_FILE%|${env_file}|" "${service}"
+    echo "${PASSWORD}" | sudo -S sed -i "s|%USER%|${USER}|; s|%LOG%|${log}|; s|%CFG%|${cfg}|; s|%PRINTER%|${klippy_serial}|; s|%UDS%|${klippy_socket}|" "${env_file}"
 
     ok_msg "Klipper service file created!"
   fi
@@ -414,11 +416,11 @@ function remove_klipper_service() {
 
   for service in $(klipper_systemd | cut -d"/" -f5); do
     status_msg "Removing ${service} ..."
-    sudo systemctl stop "${service}"
-    sudo systemctl disable "${service}"
-    sudo rm -f "${SYSTEMD}/${service}"
-    sudo systemctl daemon-reload
-    sudo systemctl reset-failed
+    echo "${PASSWORD}" | sudo -S systemctl stop "${service}"
+    echo "${PASSWORD}" | sudo -S systemctl disable "${service}"
+    echo "${PASSWORD}" | sudo -S rm -f "${SYSTEMD}/${service}"
+    echo "${PASSWORD}" | sudo -S systemctl daemon-reload
+    echo "${PASSWORD}" | sudo -S systemctl reset-failed
   done
 
   ok_msg "All Klipper services removed!"

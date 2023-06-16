@@ -237,7 +237,7 @@ function create_octoprint_service() {
       basedir="${HOME}/.octoprint"
       printer="${printer_data}/comms/klippy.serial"
       config_yaml="${basedir}/config.yaml"
-      restart_cmd="sudo service octoprint restart"
+      restart_cmd="echo "${PASSWORD}" | sudo -S service octoprint restart"
     elif (( octoprint_count > 1 )); then
 
       local re="^[1-9][0-9]*$"
@@ -252,13 +252,13 @@ function create_octoprint_service() {
       basedir="${HOME}/.octoprint_${names[${j}]}"
       printer="${printer_data}/comms/klippy.serial"
       config_yaml="${basedir}/config.yaml"
-      restart_cmd="sudo service octoprint-${names[${j}]} restart"
+      restart_cmd="echo "${PASSWORD}" | sudo -S service octoprint-${names[${j}]} restart"
     fi
 
     (( octoprint_count == 1 )) && status_msg "Creating OctoPrint Service ..."
     (( octoprint_count > 1 )) && status_msg "Creating OctoPrint Service ${i}(${names[${j}]}) ..."
 
-    sudo /bin/sh -c "cat > ${service}" << OCTOPRINT
+    echo "${PASSWORD}" | sudo -S /bin/sh -c "cat > ${service}" << OCTOPRINT
 [Unit]
 Description=Starts OctoPrint on startup
 After=network-online.target
@@ -295,8 +295,8 @@ serial:
 server:
     commands:
         serverRestartCommand: ${restart_cmd}
-        systemRestartCommand: sudo shutdown -r now
-        systemShutdownCommand: sudo shutdown -h now
+        systemRestartCommand: echo "${PASSWORD}" | sudo -S shutdown -r now
+        systemShutdownCommand: echo "${PASSWORD}" | sudo -S shutdown -h now
 CONFIGYAML
       ok_msg "Ok!"
     fi
@@ -306,14 +306,14 @@ CONFIGYAML
 function add_reboot_permission() {
   #create a backup if file already exists
   if [[ -f /etc/sudoers.d/octoprint-shutdown ]]; then
-    sudo mv /etc/sudoers.d/octoprint-shutdown /etc/sudoers.d/octoprint-shutdown.old
+    echo "${PASSWORD}" | sudo -S mv /etc/sudoers.d/octoprint-shutdown /etc/sudoers.d/octoprint-shutdown.old
   fi
 
   #create new permission file
   status_msg "Add reboot permission to user '${USER}' ..."
   cd "${HOME}" && echo "${USER} ALL=NOPASSWD: /sbin/shutdown" > octoprint-shutdown
-  sudo chown 0 octoprint-shutdown
-  sudo mv octoprint-shutdown /etc/sudoers.d/octoprint-shutdown
+  echo "${PASSWORD}" | sudo -S chown 0 octoprint-shutdown
+  echo "${PASSWORD}" | sudo -S mv octoprint-shutdown /etc/sudoers.d/octoprint-shutdown
   ok_msg "Permission set!"
 }
 
@@ -339,22 +339,22 @@ function remove_octoprint_service() {
 
   for service in $(octoprint_systemd | cut -d"/" -f5); do
     status_msg "Removing ${service} ..."
-    sudo systemctl stop "${service}"
-    sudo systemctl disable "${service}"
-    sudo rm -f "${SYSTEMD}/${service}"
+    echo "${PASSWORD}" | sudo -S systemctl stop "${service}"
+    echo "${PASSWORD}" | sudo -S systemctl disable "${service}"
+    echo "${PASSWORD}" | sudo -S rm -f "${SYSTEMD}/${service}"
     ok_msg "Done!"
   done
 
   ### reloading units
-  sudo systemctl daemon-reload
-  sudo systemctl reset-failed
+  echo "${PASSWORD}" | sudo -S systemctl daemon-reload
+  echo "${PASSWORD}" | sudo -S systemctl reset-failed
 }
 
 function remove_octoprint_sudoers() {
   [[ ! -f /etc/sudoers.d/octoprint-shutdown ]] && return
 
   ### remove sudoers file
-  sudo rm -f /etc/sudoers.d/octoprint-shutdown
+  echo "${PASSWORD}" | sudo -S rm -f /etc/sudoers.d/octoprint-shutdown
 }
 
 function remove_octoprint_env() {

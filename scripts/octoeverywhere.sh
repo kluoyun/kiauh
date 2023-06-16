@@ -187,15 +187,15 @@ function remove_octoeverywhere_systemd() {
 
   for service in $(octoeverywhere_systemd | cut -d"/" -f5); do
     status_msg "Removing ${service} ..."
-    sudo systemctl stop "${service}"
-    sudo systemctl disable "${service}"
-    sudo rm -f "${SYSTEMD}/${service}"
+    echo "${PASSWORD}" | sudo -S systemctl stop "${service}"
+    echo "${PASSWORD}" | sudo -S systemctl disable "${service}"
+    echo "${PASSWORD}" | sudo -S rm -f "${SYSTEMD}/${service}"
     ok_msg "Done!"
   done
 
   ### reloading units
-  sudo systemctl daemon-reload
-  sudo systemctl reset-failed
+  echo "${PASSWORD}" | sudo -S systemctl daemon-reload
+  echo "${PASSWORD}" | sudo -S systemctl reset-failed
   ok_msg "OctoEverywhere Services removed!"
 }
 
@@ -320,7 +320,7 @@ function install_octoeverywhere_dependencies() {
 
   ### Update system package info
   status_msg "Updating package lists..."
-  if ! sudo apt-get update --allow-releaseinfo-change; then
+  if ! echo "${PASSWORD}" | sudo -S apt-get update --allow-releaseinfo-change; then
     log_error "failure while updating package lists"
     error_msg "Updating package lists failed!"
     exit 1
@@ -328,7 +328,7 @@ function install_octoeverywhere_dependencies() {
 
   ### Install required packages
   status_msg "Installing required packages..."
-  if ! sudo apt-get install --yes "${packages[@]}"; then
+  if ! echo "${PASSWORD}" | sudo -S apt-get install --yes "${packages[@]}"; then
     log_error "failure while installing required octoeverywhere packages"
     error_msg "Installing required packages failed!"
     exit 1

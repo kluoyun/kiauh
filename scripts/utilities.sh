@@ -252,7 +252,7 @@ function do_action_service() {
       service=$(echo "${service}" | rev | cut -d"/" -f1 | rev)
       status_msg "${action^} ${service} ..."
 
-      if sudo systemctl "${action}" "${service}"; then
+      if echo "${PASSWORD}" | sudo -S systemctl "${action}" "${service}"; then
         log_info "${service}: ${action} > success"
         ok_msg "${action^} ${service} successfull!"
       else
@@ -303,7 +303,7 @@ function dependency_check() {
     done
     echo
 
-    if sudo apt-get update --allow-releaseinfo-change && sudo apt-get install "${packages[@]}" -y; then
+    if echo "${PASSWORD}" | sudo -S apt-get update --allow-releaseinfo-change && echo "${PASSWORD}" | sudo -S apt-get install "${packages[@]}" -y; then
       ok_msg "Dependencies installed!"
     else
       error_msg "Installing dependencies failed!"
@@ -375,7 +375,7 @@ function check_system_updates() {
 
 function update_system() {
   status_msg "Updating System ..."
-  if sudo apt-get update --allow-releaseinfo-change && sudo apt-get upgrade -y; then
+  if echo "${PASSWORD}" | sudo -S apt-get update --allow-releaseinfo-change && echo "${PASSWORD}" | sudo -S apt-get upgrade -y; then
     print_confirm "Update complete! Check the log above!\n ${yellow}KIAUH will not install any dist-upgrades or\n any packages which have been kept back!${green}"
   else
     print_error "System update failed! Please watch for any errors printed above!"
@@ -413,16 +413,17 @@ function check_usergroups() {
 
     local yn
     while true; do
-      read -p "${cyan}###### Add user '${USER}' to group(s) now? (Y/n):${white} " yn
+      # read -p "${cyan}###### Add user '${USER}' to group(s) now? (Y/n):${white} " yn
+      yn="Y"
       case "${yn}" in
         Y|y|Yes|yes|"")
           select_msg "Yes"
           status_msg "Adding user '${USER}' to group(s) ..."
           if [[ ${group_tty} == "false" ]]; then
-            sudo usermod -a -G tty "${USER}" && ok_msg "Group 'tty' assigned!"
+            echo "${PASSWORD}" | sudo -S usermod -a -G tty "${USER}" && ok_msg "Group 'tty' assigned!"
           fi
           if [[ ${group_dialout} == "false" ]]; then
-            sudo usermod -a -G dialout "${USER}" && ok_msg "Group 'dialout' assigned!"
+            echo "${PASSWORD}" | sudo -S usermod -a -G dialout "${USER}" && ok_msg "Group 'dialout' assigned!"
           fi
           ok_msg "Remember to relog/restart this machine for the group(s) to be applied!"
           break;;
@@ -512,21 +513,21 @@ function set_hostname() {
   if [[ -f /etc/hosts ]]; then
     current_date=$(get_date)
     status_msg "Creating backup of hosts file ..."
-    sudo cp "/etc/hosts" "/etc/hosts.${current_date}.bak"
+    echo "${PASSWORD}" | sudo -S cp "/etc/hosts" "/etc/hosts.${current_date}.bak"
     ok_msg "Backup done!"
     ok_msg "File:'/etc/hosts.${current_date}.bak'"
   else
-    sudo touch /etc/hosts
+    echo "${PASSWORD}" | sudo -S touch /etc/hosts
   fi
 
   #set new hostname in /etc/hostname
   status_msg "Setting hostname to '${new_hostname}' ..."
   status_msg "Please wait ..."
-  sudo hostnamectl set-hostname "${new_hostname}"
+  echo "${PASSWORD}" | sudo -S hostnamectl set-hostname "${new_hostname}"
 
   #write new hostname to /etc/hosts
   status_msg "Writing new hostname to /etc/hosts ..."
-  echo "127.0.0.1       ${new_hostname}" | sudo tee -a /etc/hosts &>/dev/null
+  echo "127.0.0.1       ${new_hostname}" | echo "${PASSWORD}" | sudo -S tee -a /etc/hosts &>/dev/null
   ok_msg "New hostname successfully configured!"
   ok_msg "Remember to reboot for the changes to take effect!"
 }

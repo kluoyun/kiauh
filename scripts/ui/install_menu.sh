@@ -31,6 +31,7 @@ function install_ui() {
   echo -e "|  5) [KlipperScreen]      | Webcam Streamer:           |"
   echo -e "|                          | 11) [Crowsnest]            |"
   back_footer
+  quit_footer
 }
 
 function install_menu() {
@@ -43,9 +44,16 @@ function install_menu() {
   ### save all klipper multi-instance names to the ini file
   set_multi_instance_names
 
+  do_action "start_klipper_setup" "install_ui";
+  do_action "moonraker_setup_dialog" "install_ui";
+  do_action "install_fluidd" "install_ui";
+  do_action "install_mainsail" "install_ui";
+  do_action "install_klipperscreen" "install_ui";
+
   local action
   while true; do
-    read -p "${cyan}####### Perform action:${white} " action
+    # read -p "${cyan}####### Perform action:${white} " action
+    action="Q"
     case "${action}" in
       1)
         do_action "start_klipper_setup" "install_ui";;
@@ -71,6 +79,9 @@ function install_menu() {
         do_action "install_crowsnest" "install_ui";;
       B|b)
         clear; main_menu; break;;
+      Q|q)
+        echo -e "${green}###### Happy printing! ######${white}"; echo
+        exit 0;;
       *)
         deny_action "install_ui";;
     esac

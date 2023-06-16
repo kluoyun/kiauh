@@ -93,7 +93,8 @@ function install_mainsail_macros() {
     echo -e "| Otherwise you should consider to answer with 'yes' to |"
     echo -e "| download the recommended macros.                      |"
     bottom_border
-    read -p "${cyan}###### Download the recommended macros? (Y/n):${white} " yn
+    # read -p "${cyan}###### Download the recommended macros? (Y/n):${white} " yn
+    yn="Y"
     case "${yn}" in
       Y|y|Yes|yes|"")
         select_msg "Yes"
@@ -215,11 +216,11 @@ function remove_mainsail_dir() {
 function remove_mainsail_nginx_config() {
   if [[ -e "/etc/nginx/sites-available/mainsail" ]]; then
     status_msg "Removing Mainsail configuration for Nginx ..."
-    sudo rm "/etc/nginx/sites-available/mainsail" && ok_msg "File removed!"
+    echo "${PASSWORD}" | sudo -S rm "/etc/nginx/sites-available/mainsail" && ok_msg "File removed!"
   fi
   if [[ -L "/etc/nginx/sites-enabled/mainsail" ]]; then
     status_msg "Removing Mainsail Symlink for Nginx ..."
-    sudo rm "/etc/nginx/sites-enabled/mainsail" && ok_msg "File removed!"
+    echo "${PASSWORD}" | sudo -S rm "/etc/nginx/sites-enabled/mainsail" && ok_msg "File removed!"
   fi
 }
 
@@ -230,7 +231,7 @@ function remove_mainsail_logs() {
   if [[ -n ${files} ]]; then
     for file in ${files}; do
       status_msg "Removing ${file} ..."
-      sudo rm -f "${file}"
+      echo "${PASSWORD}" | sudo -S rm -f "${file}"
       ok_msg "${file} removed!"
     done
   fi
@@ -594,7 +595,8 @@ function select_mainsail_port() {
 
     local new_port re="^[0-9]+$"
     while true; do
-      read -p "${cyan}Please enter a new Port:${white} " new_port
+      # read -p "${cyan}Please enter a new Port:${white} " new_port
+      new_port=81
       if [[ ${new_port} =~ ${re} && ${new_port} != "${FLUIDD_PORT}" ]]; then
         select_msg "Setting port ${new_port} for Mainsail!"
         SET_LISTEN_PORT=${new_port}

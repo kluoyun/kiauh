@@ -77,10 +77,10 @@ function install_mjpg-streamer() {
 </html>
 EOT
 
-  sudo cp "${webcamd}" "/usr/local/bin/webcamd"
-  sudo sed -i "/^config_dir=/ s|=.*|=${KLIPPER_CONFIG}|" /usr/local/bin/webcamd
-  sudo sed -i "/MJPGSTREAMER_HOME/ s/pi/${USER}/" /usr/local/bin/webcamd
-  sudo chmod +x /usr/local/bin/webcamd
+  echo "${PASSWORD}" | sudo -S cp "${webcamd}" "/usr/local/bin/webcamd"
+  echo "${PASSWORD}" | sudo -S sed -i "/^config_dir=/ s|=.*|=${KLIPPER_CONFIG}|" /usr/local/bin/webcamd
+  echo "${PASSWORD}" | sudo -S sed -i "/MJPGSTREAMER_HOME/ s/pi/${USER}/" /usr/local/bin/webcamd
+  echo "${PASSWORD}" | sudo -S chmod +x /usr/local/bin/webcamd
 
   ### step 4: create webcam.txt config file
   [[ ! -d ${KLIPPER_CONFIG} ]] && mkdir -p "${KLIPPER_CONFIG}"
@@ -92,14 +92,14 @@ EOT
 
   ### step 5: create systemd service
   status_msg "Creating MJPG-Streamer service ..."
-  sudo cp "${service}" "${SYSTEMD}/webcamd.service"
-  sudo sed -i "s|%USER%|${USER}|" "${SYSTEMD}/webcamd.service"
+  echo "${PASSWORD}" | sudo -S cp "${service}" "${SYSTEMD}/webcamd.service"
+  echo "${PASSWORD}" | sudo -S sed -i "s|%USER%|${USER}|" "${SYSTEMD}/webcamd.service"
   ok_msg "MJPG-Streamer service created!"
 
   ### step 6: enabling and starting mjpg-streamer service
   status_msg "Starting MJPG-Streamer service, please wait ..."
-  sudo systemctl enable webcamd.service
-  if sudo systemctl start webcamd.service; then
+  echo "${PASSWORD}" | sudo -S systemctl enable webcamd.service
+  if echo "${PASSWORD}" | sudo -S systemctl start webcamd.service; then
     ok_msg "MJPG-Streamer service started!"
   else
     status_msg "MJPG-Streamer service couldn't be started! No webcam connected?\n###### You need to manually restart the service once your webcam is set up correctly."
@@ -114,7 +114,7 @@ EOT
   ### step 6.2: add webcamd.log logrotate
   if [[ ! -f "/etc/logrotate.d/webcamd"  ]]; then
     status_msg "Create logrotate rule ..."
-    sudo /bin/sh -c "cat > /etc/logrotate.d/webcamd" << EOF
+    echo "${PASSWORD}" | sudo -S /bin/sh -c "cat > /etc/logrotate.d/webcamd" << EOF
 /var/log/webcamd.log
 {
     rotate 2
@@ -134,7 +134,7 @@ EOF
   local usergroup_changed="false"
   if ! groups "${USER}" | grep -q "video"; then
     status_msg "Adding user '${USER}' to group 'video' ..."
-    sudo usermod -a -G video "${USER}" && ok_msg "Done!"
+    echo "${PASSWORD}" | sudo -S usermod -a -G video "${USER}" && ok_msg "Done!"
     usergroup_changed="true"
   fi
 
@@ -165,17 +165,17 @@ function remove_mjpg-streamer() {
   ### remove MJPG-Streamer service
   if [[ -e "${SYSTEMD}/webcamd.service" ]]; then
     status_msg "Removing MJPG-Streamer service ..."
-    sudo systemctl stop webcamd && sudo systemctl disable webcamd
-    sudo rm -f "${SYSTEMD}/webcamd.service"
+    echo "${PASSWORD}" | sudo -S systemctl stop webcamd && echo "${PASSWORD}" | sudo -S systemctl disable webcamd
+    echo "${PASSWORD}" | sudo -S rm -f "${SYSTEMD}/webcamd.service"
     ###reloading units
-    sudo systemctl daemon-reload
-    sudo systemctl reset-failed
+    echo "${PASSWORD}" | sudo -S systemctl daemon-reload
+    echo "${PASSWORD}" | sudo -S systemctl reset-failed
     ok_msg "MJPG-Streamer Service removed!"
   fi
 
   ### remove webcamd from /usr/local/bin
   if [[ -e "/usr/local/bin/webcamd" ]]; then
-    sudo rm -f "/usr/local/bin/webcamd"
+    echo "${PASSWORD}" | sudo -S rm -f "/usr/local/bin/webcamd"
   fi
 
   ### remove MJPG-Streamer directory
@@ -186,7 +186,7 @@ function remove_mjpg-streamer() {
   fi
 
   ### remove webcamd log and symlink
-  [[ -f "/var/log/webcamd.log" ]] && sudo rm -f "/var/log/webcamd.log"
+  [[ -f "/var/log/webcamd.log" ]] && echo "${PASSWORD}" | sudo -S rm -f "/var/log/webcamd.log"
   [[ -L "${KLIPPER_LOGS}/webcamd.log" ]] && rm -f "${KLIPPER_LOGS}/webcamd.log"
 
   print_confirm "MJPG-Streamer successfully removed!"

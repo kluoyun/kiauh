@@ -98,7 +98,8 @@ function main_menu() {
 
   local action
   while true; do
-    read -p "${cyan}####### Perform action:${white} " action
+    # read -p "${cyan}####### Perform action:${white} " action
+    action=1
     case "${action}" in
       "start klipper") do_action_service "start" "klipper"; main_ui;;
       "stop klipper") do_action_service "stop" "klipper"; main_ui;;

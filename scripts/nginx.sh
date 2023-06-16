@@ -19,13 +19,13 @@ function remove_nginx() {
   if [[ $(dpkg -s nginx  2>/dev/null | grep "Status") = *\ installed ]]; then
     status_msg "Stopping NGINX service ..."
     if systemctl is-active nginx -q; then
-      sudo systemctl stop nginx && ok_msg "Service stopped!"
+      echo "${PASSWORD}" | sudo -S systemctl stop nginx && ok_msg "Service stopped!"
     else
       warn_msg "NGINX service not active!"
     fi
 
     status_msg "Removing NGINX from system ..."
-    if sudo apt-get remove nginx -y && sudo update-rc.d -f nginx remove; then
+    if echo "${PASSWORD}" | sudo -S apt-get remove nginx -y && echo "${PASSWORD}" | sudo -S update-rc.d -f nginx remove; then
       ok_msg "NGINX removed!"
     else
       error_msg "Removing NGINX from system failed!"
@@ -50,11 +50,11 @@ function set_upstream_nginx_cfg() {
   [[ ! -d "${BACKUP_DIR}/nginx_cfg" ]] && mkdir -p "${BACKUP_DIR}/nginx_cfg"
 
   if [[ -f ${upstreams} ]]; then
-    sudo mv "${upstreams}" "${BACKUP_DIR}/nginx_cfg/${current_date}_upstreams.conf"
+    echo "${PASSWORD}" | sudo -S mv "${upstreams}" "${BACKUP_DIR}/nginx_cfg/${current_date}_upstreams.conf"
   fi
 
   if [[ -f ${common_vars} ]]; then
-    sudo mv "${common_vars}" "${BACKUP_DIR}/nginx_cfg/${current_date}_common_vars.conf"
+    echo "${PASSWORD}" | sudo -S mv "${common_vars}" "${BACKUP_DIR}/nginx_cfg/${current_date}_common_vars.conf"
   fi
 
   ### transfer ownership of backed up files from root to ${USER}
@@ -64,13 +64,13 @@ function set_upstream_nginx_cfg() {
   for file in ${files}; do
     if [[ $(stat -c "%U" "${file}") != "${USER}" ]]; then
       log_info "chown for user: ${USER} on file: ${file}"
-      sudo chown "${USER}" "${file}"
+      echo "${PASSWORD}" | sudo -S chown "${USER}" "${file}"
     fi
   done
 
   ### copy nginx configs to target destination
-  [[ ! -f ${upstreams} ]] && sudo cp "${RESOURCES}/upstreams.conf" "${upstreams}"
-  [[ ! -f ${common_vars} ]] && sudo cp "${RESOURCES}/common_vars.conf" "${common_vars}"
+  [[ ! -f ${upstreams} ]] && echo "${PASSWORD}" | sudo -S cp "${RESOURCES}/upstreams.conf" "${upstreams}"
+  [[ ! -f ${common_vars} ]] && echo "${PASSWORD}" | sudo -S cp "${RESOURCES}/common_vars.conf" "${common_vars}"
 }
 
 function symlink_webui_nginx_log() {
@@ -121,7 +121,7 @@ function match_nginx_configs() {
   if (( upstreams_webcams < mainsail_webcams || upstreams_webcams < fluidd_webcams )); then
     status_msg "Outdated upstreams.conf found! Updating ..."
 
-    sudo rm -f "${upstreams}" "${common_vars}"
+    echo "${PASSWORD}" | sudo -S rm -f "${upstreams}" "${common_vars}"
     set_upstream_nginx_cfg
 
     require_service_restart="true"
@@ -131,12 +131,12 @@ function match_nginx_configs() {
   if [[ -e ${mainsail_nginx_cfg} ]] && (( upstreams_webcams > mainsail_webcams )); then
     status_msg "Outdated Mainsail config found! Updating ..."
 
-    sudo rm -f "${mainsail_nginx_cfg}"
-    sudo cp "${RESOURCES}/mainsail" "${mainsail_nginx_cfg}"
-    sudo sed -i "s/<<UI>>/mainsail/g" "${mainsail_nginx_cfg}"
-    sudo sed -i "/root/s/pi/${USER}/" "${mainsail_nginx_cfg}"
-    sudo sed -i "s/listen\s[0-9]*;/listen ${mainsail_port};/" "${mainsail_nginx_cfg}"
-    sudo sed -i "s/listen\s\[\:*\]\:[0-9]*;/listen \[::\]\:${mainsail_port};/" "${mainsail_nginx_cfg}"
+    echo "${PASSWORD}" | sudo -S rm -f "${mainsail_nginx_cfg}"
+    echo "${PASSWORD}" | sudo -S cp "${RESOURCES}/mainsail" "${mainsail_nginx_cfg}"
+    echo "${PASSWORD}" | sudo -S sed -i "s/<<UI>>/mainsail/g" "${mainsail_nginx_cfg}"
+    echo "${PASSWORD}" | sudo -S sed -i "/root/s/pi/${USER}/" "${mainsail_nginx_cfg}"
+    echo "${PASSWORD}" | sudo -S sed -i "s/listen\s[0-9]*;/listen ${mainsail_port};/" "${mainsail_nginx_cfg}"
+    echo "${PASSWORD}" | sudo -S sed -i "s/listen\s\[\:*\]\:[0-9]*;/listen \[::\]\:${mainsail_port};/" "${mainsail_nginx_cfg}"
 
     require_service_restart="true"
   fi
@@ -145,19 +145,19 @@ function match_nginx_configs() {
   if [[ -e ${fluidd_nginx_cfg} ]] && (( upstreams_webcams > fluidd_webcams )); then
     status_msg "Outdated Fluidd config found! Updating ..."
 
-    sudo rm -f "${fluidd_nginx_cfg}"
-    sudo cp "${RESOURCES}/fluidd" "${fluidd_nginx_cfg}"
-    sudo sed -i "s/<<UI>>/fluidd/g" "${fluidd_nginx_cfg}"
-    sudo sed -i "/root/s/pi/${USER}/" "${fluidd_nginx_cfg}"
-    sudo sed -i "s/listen\s[0-9]*;/listen ${fluidd_port};/" "${fluidd_nginx_cfg}"
-    sudo sed -i "s/listen\s\[\:*\]\:[0-9]*;/listen \[::\]\:${fluidd_port};/" "${fluidd_nginx_cfg}"
+    echo "${PASSWORD}" | sudo -S rm -f "${fluidd_nginx_cfg}"
+    echo "${PASSWORD}" | sudo -S cp "${RESOURCES}/fluidd" "${fluidd_nginx_cfg}"
+    echo "${PASSWORD}" | sudo -S sed -i "s/<<UI>>/fluidd/g" "${fluidd_nginx_cfg}"
+    echo "${PASSWORD}" | sudo -S sed -i "/root/s/pi/${USER}/" "${fluidd_nginx_cfg}"
+    echo "${PASSWORD}" | sudo -S sed -i "s/listen\s[0-9]*;/listen ${fluidd_port};/" "${fluidd_nginx_cfg}"
+    echo "${PASSWORD}" | sudo -S sed -i "s/listen\s\[\:*\]\:[0-9]*;/listen \[::\]\:${fluidd_port};/" "${fluidd_nginx_cfg}"
 
     require_service_restart="true"
   fi
 
   ### only restart nginx if configs were updated
   if [[ ${require_service_restart} == "true" ]]; then
-    sudo systemctl restart nginx.service
+    echo "${PASSWORD}" | sudo -S systemctl restart nginx.service
   fi
 
   ok_msg "Done!"
@@ -171,7 +171,7 @@ function remove_conflicting_packages() {
 
   if [[ ${apache} == "true" ]]; then
     status_msg "Removing Apache2 from system ..."
-    if sudo apt-get remove apache2 -y && sudo update-rc.d -f apache2 remove; then
+    if echo "${PASSWORD}" | sudo -S apt-get remove apache2 -y && echo "${PASSWORD}" | sudo -S update-rc.d -f apache2 remove; then
       ok_msg "Apache2 removed!"
     else
       error_msg "Removing Apache2 from system failed!"
@@ -180,7 +180,7 @@ function remove_conflicting_packages() {
 
   if [[ ${haproxy} == "true" ]]; then
     status_msg "Removing haproxy from system ..."
-    if sudo apt-get remove haproxy -y && sudo update-rc.d -f haproxy remove; then
+    if echo "${PASSWORD}" | sudo -S apt-get remove haproxy -y && echo "${PASSWORD}" | sudo -S update-rc.d -f haproxy remove; then
       ok_msg "Haproxy removed!"
     else
       error_msg "Removing Haproxy from system failed!"
@@ -194,13 +194,13 @@ function disable_conflicting_packages() {
   if [[ ${apache} == "true" ]]; then
     status_msg "Stopping Apache2 service ..."
     if systemctl is-active apache2 -q; then
-      sudo systemctl stop apache2 && ok_msg "Service stopped!"
+      echo "${PASSWORD}" | sudo -S systemctl stop apache2 && ok_msg "Service stopped!"
     else
       warn_msg "Apache2 service not active!"
     fi
 
     status_msg "Disabling Apache2 service ..."
-    if sudo systemctl disable apache2; then
+    if echo "${PASSWORD}" | sudo -S systemctl disable apache2; then
       ok_msg "Apache2 service disabled!"
     else
       error_msg "Disabling Apache2 service failed!"
@@ -210,13 +210,13 @@ function disable_conflicting_packages() {
   if [[ ${haproxy} == "true" ]]; then
     status_msg "Stopping Haproxy service ..."
     if systemctl is-active haproxy -q; then
-      sudo systemctl stop haproxy && ok_msg "Service stopped!"
+      echo "${PASSWORD}" | sudo -S systemctl stop haproxy && ok_msg "Service stopped!"
     else
       warn_msg "Haproxy service not active!"
     fi
 
     status_msg "Disabling Haproxy service ..."
-    if sudo systemctl disable haproxy; then
+    if echo "${PASSWORD}" | sudo -S systemctl disable haproxy; then
       ok_msg "Haproxy service disabled!"
     else
       error_msg "Disabling Haproxy service failed!"
@@ -288,23 +288,23 @@ function set_nginx_cfg() {
     status_msg "Creating NGINX configuration for ${interface^} ..."
 
     # copy config to destination and set correct username
-    [[ -f ${cfg_dest} ]] && sudo rm -f "${cfg_dest}"
-    sudo cp "${cfg_src}" "${cfg_dest}"
-    sudo sed -i "/root/s/pi/${USER}/" "${cfg_dest}"
+    [[ -f ${cfg_dest} ]] && echo "${PASSWORD}" | sudo -S rm -f "${cfg_dest}"
+    echo "${PASSWORD}" | sudo -S cp "${cfg_src}" "${cfg_dest}"
+    echo "${PASSWORD}" | sudo -S sed -i "/root/s/pi/${USER}/" "${cfg_dest}"
 
     if [[ ${SET_LISTEN_PORT} != "${DEFAULT_PORT}" ]]; then
-      sudo sed -i "s/listen\s[0-9]*;/listen ${SET_LISTEN_PORT};/" "${cfg_dest}"
-      sudo sed -i "s/listen\s\[\:*\]\:[0-9]*;/listen \[::\]\:${SET_LISTEN_PORT};/" "${cfg_dest}"
+      echo "${PASSWORD}" | sudo -S sed -i "s/listen\s[0-9]*;/listen ${SET_LISTEN_PORT};/" "${cfg_dest}"
+      echo "${PASSWORD}" | sudo -S sed -i "s/listen\s\[\:*\]\:[0-9]*;/listen \[::\]\:${SET_LISTEN_PORT};/" "${cfg_dest}"
     fi
 
     #remove nginx default config
     if [[ -e "/etc/nginx/sites-enabled/default" ]]; then
-      sudo rm "/etc/nginx/sites-enabled/default"
+      echo "${PASSWORD}" | sudo -S rm "/etc/nginx/sites-enabled/default"
     fi
 
     #create symlink for own sites
     if [[ ! -e "/etc/nginx/sites-enabled/${interface}" ]]; then
-      sudo ln -s "/etc/nginx/sites-available/${interface}" "/etc/nginx/sites-enabled/"
+      echo "${PASSWORD}" | sudo -S ln -s "/etc/nginx/sites-available/${interface}" "/etc/nginx/sites-enabled/"
     fi
 
     if [[ -n ${SET_LISTEN_PORT} ]]; then
@@ -313,7 +313,7 @@ function set_nginx_cfg() {
       ok_msg "${interface^} configured for default port ${DEFAULT_PORT}!"
     fi
 
-    sudo systemctl restart nginx.service
+    echo "${PASSWORD}" | sudo -S systemctl restart nginx.service
 
     ok_msg "NGINX configuration for ${interface^} was set!"
   fi

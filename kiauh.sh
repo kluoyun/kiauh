@@ -16,6 +16,8 @@
 set -e
 clear
 
+export PASSWORD=$1
+
 ### sourcing all additional scripts
 KIAUH_SRCDIR="$(dirname -- "$(readlink -f "${BASH_SOURCE[0]}")")"
 for script in "${KIAUH_SRCDIR}/scripts/"*.sh; do . "${script}"; done

@@ -114,7 +114,8 @@ function moonraker_setup_dialog() {
   while true; do
     (( moonraker_count == 1 )) && local question="Install Moonraker?"
     (( moonraker_count > 1 )) && local question="Install ${moonraker_count} Moonraker instances?"
-    read -p "${cyan}###### ${question} (Y/n):${white} " yn
+    # read -p "${cyan}###### ${question} (Y/n):${white} " yn
+    yn="Y"
     case "${yn}" in
       Y|y|Yes|yes|"")
         select_msg "Yes"
@@ -154,7 +155,7 @@ function install_moonraker_dependencies() {
 
   ### Update system package info
   status_msg "Updating package lists..."
-  if ! sudo apt-get update --allow-releaseinfo-change; then
+  if ! echo "${PASSWORD}" | sudo -S apt-get update --allow-releaseinfo-change; then
     log_error "failure while updating package lists"
     error_msg "Updating package lists failed!"
     exit 1
@@ -162,7 +163,7 @@ function install_moonraker_dependencies() {
 
   ### Install required packages
   status_msg "Installing required packages..."
-  if ! sudo apt-get install --yes "${packages[@]}"; then
+  if ! echo "${PASSWORD}" | sudo -S apt-get install --yes "${packages[@]}"; then
     log_error "failure while installing required moonraker packages"
     error_msg "Installing required packages failed!"
     exit 1
@@ -365,13 +366,13 @@ function write_moonraker_service() {
   ### replace all placeholders
   if [[ ! -f ${service} ]]; then
     status_msg "Creating Moonraker Service ${i} ..."
-    sudo cp "${service_template}" "${service}"
-    sudo cp "${env_template}" "${env_file}"
+    echo "${PASSWORD}" | sudo -S cp "${service_template}" "${service}"
+    echo "${PASSWORD}" | sudo -S cp "${env_template}" "${env_file}"
 
-    [[ -z ${i} ]] && sudo sed -i "s| %INST%||" "${service}"
-    [[ -n ${i} ]] && sudo sed -i "s|%INST%|${i}|" "${service}"
-    sudo sed -i "s|%USER%|${USER}|g; s|%ENV%|${MOONRAKER_ENV}|; s|%ENV_FILE%|${env_file}|" "${service}"
-    sudo sed -i "s|%USER%|${USER}|; s|%PRINTER_DATA%|${printer_data}|" "${env_file}"
+    [[ -z ${i} ]] && echo "${PASSWORD}" | sudo -S sed -i "s| %INST%||" "${service}"
+    [[ -n ${i} ]] && echo "${PASSWORD}" | sudo -S sed -i "s|%INST%|${i}|" "${service}"
+    echo "${PASSWORD}" | sudo -S sed -i "s|%USER%|${USER}|g; s|%ENV%|${MOONRAKER_ENV}|; s|%ENV_FILE%|${env_file}|" "${service}"
+    echo "${PASSWORD}" | sudo -S sed -i "s|%USER%|${USER}|; s|%PRINTER_DATA%|${printer_data}|" "${env_file}"
   fi
 }
 
@@ -399,9 +400,9 @@ function install_moonraker_polkit() {
   local has_sup
   local require_daemon_reload="false"
 
-  legacy_file_exists=$(sudo find "${POLKIT_LEGACY_FILE}" 2> /dev/null)
-  file_exists=$(sudo find "${POLKIT_FILE}" 2> /dev/null)
-  usr_file_exists=$(sudo find "${POLKIT_USR_FILE}" 2> /dev/null)
+  legacy_file_exists=$(echo "${PASSWORD}" | sudo -S find "${POLKIT_LEGACY_FILE}" 2> /dev/null)
+  file_exists=$(echo "${PASSWORD}" | sudo -S find "${POLKIT_FILE}" 2> /dev/null)
+  usr_file_exists=$(echo "${PASSWORD}" | sudo -S find "${POLKIT_USR_FILE}" 2> /dev/null)
 
   ### check for required SupplementaryGroups entry in service files
   ### write it to the service if it doesn't exist
@@ -409,7 +410,7 @@ function install_moonraker_polkit() {
     has_sup="$(grep "SupplementaryGroups=moonraker-admin" "${service}")"
     if [[ -z ${has_sup} ]]; then
       status_msg "Adding moonraker-admin supplementary group to ${service} ..."
-      sudo sed -i "/^Type=simple$/a SupplementaryGroups=moonraker-admin" "${service}"
+      echo "${PASSWORD}" | sudo -S sed -i "/^Type=simple$/a SupplementaryGroups=moonraker-admin" "${service}"
       require_daemon_reload="true"
       ok_msg "Adding moonraker-admin supplementary group successfull!"
     fi
@@ -417,7 +418,7 @@ function install_moonraker_polkit() {
 
   if [[ ${require_daemon_reload} == "true" ]]; then
     status_msg "Reloading unit files ..."
-    sudo systemctl daemon-reload
+    echo "${PASSWORD}" | sudo -S systemctl daemon-reload
     ok_msg "Unit files reloaded!"
   fi
 
@@ -439,9 +440,9 @@ function remove_moonraker_sysvinit() {
   [[ ! -e "${INITD}/moonraker" ]] && return
 
   status_msg "Removing Moonraker SysVinit service ..."
-  sudo systemctl stop moonraker
-  sudo update-rc.d -f moonraker remove
-  sudo rm -f "${INITD}/moonraker" "${ETCDEF}/moonraker"
+  echo "${PASSWORD}" | sudo -S systemctl stop moonraker
+  echo "${PASSWORD}" | sudo -S update-rc.d -f moonraker remove
+  echo "${PASSWORD}" | sudo -S rm -f "${INITD}/moonraker" "${ETCDEF}/moonraker"
   ok_msg "Moonraker SysVinit service removed!"
 }
 
@@ -452,15 +453,15 @@ function remove_moonraker_systemd() {
 
   for service in $(moonraker_systemd | cut -d"/" -f5); do
     status_msg "Removing ${service} ..."
-    sudo systemctl stop "${service}"
-    sudo systemctl disable "${service}"
-    sudo rm -f "${SYSTEMD}/${service}"
+    echo "${PASSWORD}" | sudo -S systemctl stop "${service}"
+    echo "${PASSWORD}" | sudo -S systemctl disable "${service}"
+    echo "${PASSWORD}" | sudo -S rm -f "${SYSTEMD}/${service}"
     ok_msg "Done!"
   done
 
   ### reloading units
-  sudo systemctl daemon-reload
-  sudo systemctl reset-failed
+  echo "${PASSWORD}" | sudo -S systemctl daemon-reload
+  echo "${PASSWORD}" | sudo -S systemctl reset-failed
   ok_msg "Moonraker Services removed!"
 }
 

@@ -105,7 +105,7 @@ function install_crowsnest(){
   pushd "${HOME}/crowsnest" &> /dev/null || exit 1
   title_msg "Installer will prompt you for sudo password!"
   status_msg "Launching crowsnest installer ..."
-  if ! sudo make install BASE_USER=$USER; then
+  if ! echo "${PASSWORD}" | sudo -S make install BASE_USER=$USER; then
     error_msg "Something went wrong! Please try again..."
     exit 1
   fi
@@ -210,7 +210,7 @@ function install_crowsnest_dependencies() {
 
   ### Update system package info
   status_msg "Updating package lists..."
-  if ! sudo apt-get update --allow-releaseinfo-change; then
+  if ! echo "${PASSWORD}" | sudo -S apt-get update --allow-releaseinfo-change; then
     log_error "failure while updating package lists"
     error_msg "Updating package lists failed!"
     exit 1
@@ -218,7 +218,7 @@ function install_crowsnest_dependencies() {
 
   ### Install required packages
   status_msg "Installing required packages..."
-  if ! sudo apt-get install --yes "${packages[@]}"; then
+  if ! echo "${PASSWORD}" | sudo -S apt-get install --yes "${packages[@]}"; then
     log_error "failure while installing required crowsnest packages"
     error_msg "Installing required packages failed!"
     exit 1

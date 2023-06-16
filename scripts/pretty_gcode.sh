@@ -37,17 +37,17 @@ function install_pgc_for_klipper() {
     exit 1
   fi
 
-  sudo cp "${pgconfsrc}" "${pgconf}"
-  sudo sed -i "s|/home/pi/pgcode;|${HOME}/pgcode;|" "${pgconf}"
+  echo "${PASSWORD}" | sudo -S cp "${pgconfsrc}" "${pgconf}"
+  echo "${PASSWORD}" | sudo -S sed -i "s|/home/pi/pgcode;|${HOME}/pgcode;|" "${pgconf}"
 
   ### replace default port
   if (( pgc_custom_port != pgc_default_port )); then
-    sudo sed -i "s|listen ${pgc_default_port};|listen ${pgc_custom_port};|" "${pgconf}"
-    sudo sed -i "s|listen \[::\]:${pgc_default_port};|listen \[::\]:${pgc_custom_port};|" "${pgconf}"
+    echo "${PASSWORD}" | sudo -S sed -i "s|listen ${pgc_default_port};|listen ${pgc_custom_port};|" "${pgconf}"
+    echo "${PASSWORD}" | sudo -S sed -i "s|listen \[::\]:${pgc_default_port};|listen \[::\]:${pgc_custom_port};|" "${pgconf}"
   fi
 
-  [[ ! -L ${pgconfsl} ]] && sudo ln -s "${pgconf}" "${pgconfsl}"
-  sudo systemctl restart nginx
+  [[ ! -L ${pgconfsl} ]] && echo "${PASSWORD}" | sudo -S ln -s "${pgconf}" "${pgconfsl}"
+  echo "${PASSWORD}" | sudo -S systemctl restart nginx
 
   pgc_uri="http://$(hostname -I | cut -d" " -f1):${pgc_custom_port}"
   echo -e "${cyan}\n● Accessible via:${white} ${pgc_uri}"
@@ -65,9 +65,9 @@ function remove_prettygcode() {
   if [[ -d ${PGC_DIR} || -f ${pgconf} || -L ${pgconfsl} ]]; then
     status_msg "Removing PrettyGCode for Klipper ..."
     rm -rf "${PGC_DIR}"
-    sudo rm -f "${pgconf}"
-    sudo rm -f "${pgconfsl}"
-    sudo systemctl restart nginx
+    echo "${PASSWORD}" | sudo -S rm -f "${pgconf}"
+    echo "${PASSWORD}" | sudo -S rm -f "${pgconfsl}"
+    echo "${PASSWORD}" | sudo -S systemctl restart nginx
     print_confirm "PrettyGCode for Klipper successfully removed!"
   else
     print_error "PrettyGCode for Klipper not found!\n Skipping..."

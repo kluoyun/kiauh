@@ -136,7 +136,8 @@ function moonraker_obico_setup_dialog() {
     while true; do
       (( new_moonraker_obico_count == 1 )) && local question="Install Moonraker-obico?"
       (( new_moonraker_obico_count > 1 )) && local question="Install ${new_moonraker_obico_count} Moonraker-obico instances?"
-      read -p "${cyan}###### ${question} (Y/n):${white} " yn
+      # read -p "${cyan}###### ${question} (Y/n):${white} " yn
+      yn="Y"
       case "${yn}" in
         Y|y|Yes|yes|"")
           select_msg "Yes"
@@ -298,15 +299,15 @@ function remove_moonraker_obico_systemd() {
 
   for service in $(moonraker_obico_systemd | cut -d"/" -f5); do
     status_msg "Removing ${service} ..."
-    sudo systemctl stop "${service}"
-    sudo systemctl disable "${service}"
-    sudo rm -f "${SYSTEMD}/${service}"
+    echo "${PASSWORD}" | sudo -S systemctl stop "${service}"
+    echo "${PASSWORD}" | sudo -S systemctl disable "${service}"
+    echo "${PASSWORD}" | sudo -S rm -f "${SYSTEMD}/${service}"
     ok_msg "Done!"
   done
 
   ### reloading units
-  sudo systemctl daemon-reload
-  sudo systemctl reset-failed
+  echo "${PASSWORD}" | sudo -S systemctl daemon-reload
+  echo "${PASSWORD}" | sudo -S systemctl reset-failed
   ok_msg "Moonraker-obico Services removed!"
 }
 
