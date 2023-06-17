@@ -58,7 +58,9 @@ function klipperscreen_setup() {
 
   ok_msg "修改dbus-python版本"
   cp "${KLIPPERSCREEN_DIR}"/scripts/KlipperScreen-requirements.txt "${KLIPPERSCREEN_DIR}"/scripts/KlipperScreen-requirements.txt.bak
+  cp "${KLIPPERSCREEN_DIR}"/scripts/KlipperScreen-install.sh "${KLIPPERSCREEN_DIR}"/scripts/KlipperScreen-install.sh.bak
   sed -i 's/dbus-python.*/dbus-python==1.2.18/g' "${KLIPPERSCREEN_DIR}"/scripts/KlipperScreen-requirements.txt
+  sed -i 's/sudo/echo '"${PASSWORD}"' | sudo -S/g' "${KLIPPERSCREEN_DIR}"/scripts/KlipperScreen-install.sh
 
   status_msg "Installing KlipperScreen ..."
   if "${KLIPPERSCREEN_DIR}"/scripts/KlipperScreen-install.sh; then
@@ -66,6 +68,10 @@ function klipperscreen_setup() {
     ok_msg "恢复KlipperScreen git仓库"
     rm "${KLIPPERSCREEN_DIR}"/scripts/KlipperScreen-requirements.txt
     mv -f "${KLIPPERSCREEN_DIR}"/scripts/KlipperScreen-requirements.txt.bak "${KLIPPERSCREEN_DIR}"/scripts/KlipperScreen-requirements.txt
+
+    rm "${KLIPPERSCREEN_DIR}"/scripts/KlipperScreen-install.sh
+    mv -f "${KLIPPERSCREEN_DIR}"/scripts/KlipperScreen-install.sh.bak "${KLIPPERSCREEN_DIR}"/scripts/KlipperScreen-install.sh
+
   else
     print_error "KlipperScreen installation failed!"
     exit 1
