@@ -71,7 +71,7 @@ function remove_menu() {
       15)
         do_action "remove_nginx" "remove_ui";;
       B|b)
-        clear; main_menu; break;;
+        echo "clear"; main_menu; break;;
       *)
         deny_action "remove_ui";;
     esac

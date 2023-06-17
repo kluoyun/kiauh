@@ -84,10 +84,10 @@ function change_klipper_repo_menu() {
       fi
 
     elif [[ ${option} =~ ${back} ]]; then
-      clear && print_header
+      echo "clear" && print_header
       settings_menu
     elif [[ ${option} =~ ${help} ]]; then
-      clear && print_header
+      echo "clear" && print_header
       show_custom_klipper_repo_help
     else
       error_msg "Invalid command!"
@@ -132,7 +132,7 @@ function show_custom_klipper_repo_help() {
     read -p "${cyan}###### Please select:${white} " choice
     case "${choice}" in
       B|b)
-        clear && print_header
+        echo "clear" && print_header
         change_klipper_repo_menu
         break;;
       *)

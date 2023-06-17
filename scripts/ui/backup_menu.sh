@@ -55,7 +55,7 @@ function backup_menu() {
       9)
         do_action "backup_telegram_bot" "backup_ui";;
       B|b)
-        clear; main_menu; break;;
+        echo "clear"; main_menu; break;;
       *)
         deny_action "backup_ui";;
     esac

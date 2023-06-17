@@ -34,10 +34,10 @@ function accept_upload_conditions() {
     case "${yn}" in
       Y|y|Yes|yes|"")
         sed -i "/logupload_accepted=/s/false/true/" "${INI_FILE}"
-        clear && print_header && upload_selection
+        echo "clear" && print_header && upload_selection
         ;;
       N|n|No|no)
-        clear
+        echo "clear"
         main_menu
         break
         ;;
@@ -108,7 +108,7 @@ function upload_selection() {
 
 function upload_log() {
   local link
-  clear && print_header
+  echo "clear" && print_header
   status_msg "Uploading ${1} ..."
   link=$(curl -s -H "x-random;" --upload-file "${1}" 'http://paste.c-net.org/')
 

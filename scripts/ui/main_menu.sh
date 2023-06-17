@@ -90,7 +90,7 @@ function print_klipper_repo() {
 
 
 function main_menu() {
-  clear && print_header
+  echo "clear" && print_header
   main_ui
 
   ### initialize kiauh.ini
@@ -114,27 +114,27 @@ function main_menu() {
       "stop crowsnest") do_action_service "stop" "crowsnest"; main_ui;;
       "restart crowsnest") do_action_service "restart" "crowsnest"; main_ui;;
       update) do_action "update_kiauh" "main_ui";;
-      0)clear && print_header
+      0)echo "clear" && print_header
         #upload_selection
         print_error "Function currently disabled! Sorry!"
         main_ui;;
-      1)clear && print_header
+      1)echo "clear" && print_header
         install_menu
         break;;
-      2) clear && print_header
+      2) echo "clear" && print_header
         update_menu
         break;;
-      3) clear && print_header
+      3) echo "clear" && print_header
         remove_menu
         break;;
-      4)clear && print_header
+      4)echo "clear" && print_header
         advanced_menu
         break;;
-      5)clear && print_header
+      5)echo "clear" && print_header
         #backup_menu
         print_error "Function currently disabled! Sorry!"
         main_ui;;
-      6)clear && print_header
+      6)echo "clear" && print_header
         settings_menu
         break;;
       Q|q)

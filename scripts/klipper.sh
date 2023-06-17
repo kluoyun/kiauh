@@ -83,7 +83,7 @@ function start_klipper_setup() {
         python_version=2
         break;;
       B|b)
-        clear; install_menu; break;;
+        echo "clear"; install_menu; break;;
       *)
         error_msg "Invalid Input!\n";;
     esac
@@ -122,7 +122,7 @@ function start_klipper_setup() {
           select_msg "No\n"
           break;;
         B|b)
-          clear; install_menu; break;;
+          echo "clear"; install_menu; break;;
         *)
           error_msg "Invalid Input!\n";;
       esac

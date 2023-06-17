@@ -14,7 +14,7 @@
 # TODO: doublecheck that nothing got missed!
 
 set -e
-clear
+echo "clear"
 
 export PASSWORD=$1
 

@@ -121,7 +121,7 @@ function show_settings_help() {
     read -p "${cyan}###### Please select:${white} " choice
     case "${choice}" in
       B|b)
-        clear && print_header
+        echo "clear" && print_header
         settings_menu
         break;;
       *)
@@ -131,7 +131,7 @@ function show_settings_help() {
 }
 
 function settings_menu() {
-  clear && print_header
+  echo "clear" && print_header
   settings_ui
 
   local action
@@ -139,7 +139,7 @@ function settings_menu() {
     read -p "${cyan}####### Perform action:${white} " action
     case "${action}" in
       1)
-        clear && print_header
+        echo "clear" && print_header
         change_klipper_repo_menu
         settings_ui;;
       2)
@@ -152,11 +152,11 @@ function settings_menu() {
         toggle_backup_before_update
         settings_menu;;
       B|b)
-        clear
+        echo "clear"
         main_menu
         break;;
       H|h)
-        clear && print_header
+        echo "clear" && print_header
         show_settings_help
         break;;
       *)

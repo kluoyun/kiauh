@@ -73,7 +73,7 @@ function update_menu() {
       a)
         do_action "update_all" "update_ui";;
       B|b)
-        clear; main_menu; break;;
+        echo "clear"; main_menu; break;;
       *)
         deny_action "update_ui";;
     esac

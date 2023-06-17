@@ -55,7 +55,7 @@ function print_header() {
 }
 
 function do_action() {
-  clear && print_header
+  echo "clear" && print_header
   ### $1 is the action the user wants to fire
   $1
 #  print_msg && clear_msg
@@ -64,7 +64,7 @@ function do_action() {
 }
 
 function deny_action() {
-  clear && print_header
+  echo "clear" && print_header
   print_error "Invalid command!"
   $1
 }

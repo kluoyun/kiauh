@@ -44,7 +44,7 @@ function init_flash_process() {
         advanced_menu
         break;;
       H|h)
-        clear && print_header
+        echo "clear" && print_header
         show_flash_method_help
         break;;
       *)
@@ -94,7 +94,7 @@ function select_mcu_connection() {
         advanced_menu
         break;;
       H|h)
-        clear && print_header
+        echo "clear" && print_header
         show_mcu_connection_help
         break;;
       *)
@@ -236,12 +236,12 @@ function start_flash_sd() {
   while true; do
     read -p "${cyan}###### Please select board type:${white} " choice
     if [[ ${choice} = "q" || ${choice} = "Q" ]]; then
-      clear && advanced_menu && break
+      echo "clear" && advanced_menu && break
     elif [[ ${choice} -le ${#board_list[@]} ]]; then
       local selected_board="${board_list[${choice}]}"
       break
     else
-      clear && print_header
+      echo "clear" && print_header
       error_msg "Invalid choice!"
       flash_mcu_sd
     fi
@@ -378,7 +378,7 @@ function show_flash_method_help() {
     read -p "${cyan}###### Please select:${white} " choice
     case "${choice}" in
       B|b)
-        clear && print_header
+        echo "clear" && print_header
         init_flash_process
         break;;
       *)
@@ -414,7 +414,7 @@ function show_mcu_connection_help() {
     read -p "${cyan}###### Please select:${white} " choice
     case "${choice}" in
       B|b)
-        clear && print_header
+        echo "clear" && print_header
         select_mcu_connection
         break;;
       *)

@@ -35,7 +35,7 @@ function install_ui() {
 }
 
 function install_menu() {
-  clear && print_header
+  echo "clear" && print_header
   install_ui
 
   ### save all installed webinterface ports to the ini file
@@ -78,7 +78,7 @@ function install_menu() {
       11)
         do_action "install_crowsnest" "install_ui";;
       B|b)
-        clear; main_menu; break;;
+        echo "clear"; main_menu; break;;
       Q|q)
         echo -e "${green}###### Happy printing! ######${white}"; echo
         exit 0;;

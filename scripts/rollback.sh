@@ -36,7 +36,7 @@ function rollback_menu() {
         rollback_component "moonraker"
         break;;
       B|b)
-        clear; advanced_menu; break;;
+        echo "clear"; advanced_menu; break;;
       *)
         error_msg "Invalid command!";;
     esac
@@ -76,7 +76,7 @@ function rollback_component() {
       fi
       break
     elif [[ ${count} == "B" || ${count} == "b" ]]; then
-      clear && print_header && break
+      echo "clear" && print_header && break
     else
       error_msg "Invalid command!"
     fi
